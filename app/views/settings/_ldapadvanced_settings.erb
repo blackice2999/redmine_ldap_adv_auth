@@ -1,0 +1,111 @@
+<% defaults = Redmine::Plugin::registered_plugins[:redmine_ldapadvancedauth].settings[:default] %>
+
+<%= javascript_include_tag 'support', :plugin => 'redmine_ldapadvancedauth' %>
+<fieldset class="box">
+    <legend><b><%=l(:hostinfo)%></b></legend>
+    <p>
+        <input type="button" value="Add Host" id="addhost" onclick="addHostName()" />
+    </p>
+    <div id="hostItems">
+    <%
+
+    # check number of hosts if there is only one
+    # do not allow for remove method
+    hostid=0
+    while 1
+        value=@settings['host'+hostid.to_s]
+        break if value.nil?
+        hostid += 1
+    end
+    enable_remove=hostid > 1 ? true : false
+    hostid=0
+    while 1
+        hostval=hostid.to_s
+
+        value=@settings["host#{hostval}"]
+        if !value.nil?
+        %>
+        <p>
+            <label id="label<%=hostval%>">host<%=hostval%></label>
+            <%= text_field_tag "settings[host#{hostval}]", @settings["host#{hostval}"], :size=>40, :onKeyUp=>"checkAddHostState()" %>
+            <% if enable_remove %>
+            <span style='color:blue;text-decoration:underline;cursor:pointer' id='remove<%=hostval%>' onclick="removeHostName(this)">Remove</span>
+            <% end %>
+        </p>
+        <%
+        else
+            break
+        end
+        hostid += 1
+    end
+    %>
+    </div>
+</fieldset>
+
+
+<fieldset class="box">
+    <legend><b><%=l(:authentication)%></b></legend>
+    <p>
+        <label><%= l(:account) %></label>
+        <%=text_field_tag 'settings[account]', @settings['account'], :size=>40 %>
+    </p>
+    <p>
+        <label><%= l(:password) %></label>
+        <%=password_field 'auth_source', 'account_password', :name=>'ignore', :size=>40, 
+            :value => ((@settings['password'].nil? || @settings['password'].blank?) ? '' : ('*'*20)),
+            :onfocus=> "this.value=''; this.id='settings_password'; this.name='settings[password]';",
+            :onchange=> "this.id='settings_password'; this.name='settings[password]';" %>
+    </p>
+    <p>
+        <label><%= l(:base_dn) %></label>
+        <%=text_field_tag 'settings[base_dn]', @settings['base_dn'], :size=>40 %><br />
+        <em><%= l(:base_dn_note) %></em>
+    </p>
+    <p>
+        <label><%= l(:protocol) %></label>
+        <span><%= l(:unencrypted) %></span>
+        <%=radio_button_tag 'settings[protocol]', 'Unencrypted', @settings['protocol'].nil? || @settings['protocol'] == 'Unencrypted' ? true : false%>
+        <span><%= l(:ssl) %></span>
+        <%=radio_button_tag 'settings[protocol]', 'SSL', @settings['protocol']=='SSL' ? true : false%>
+        <span><%= l(:tls) %></span>
+        <%=radio_button_tag 'settings[protocol]', 'TLS', @settings['protocol']=='TLS' ? true : false%>
+    <p>
+        <label><%= l(:use_recommended_port)%></label>
+        <%=check_box_tag 'settings[use_recommended_port]', true, @settings['use_recommended_port']=="true", :OnClick=>"check_recommended_port()"%>
+    </p>
+    <p>
+        <label><%= l(:port)%></label>
+        <%=text_field_tag 'settings[port]', @settings['port'], :disabled=>(@settings['use_recommended_port']=="true" ? true : false) %>
+    </p>
+</fieldset>
+
+
+<fieldset class="box">
+<legend><b><%=l(:attributes)%></b></legend>
+<p>
+    <label><%= l(:attr_login)%></label>
+    <%=text_field_tag 'settings[attr_login]', @settings['attr_login']%>
+</p>
+<p>
+    <label><%= l(:attr_first)%></label>
+    <%=text_field_tag 'settings[attr_first]', @settings['attr_first']%>
+</p>
+<p>
+    <label><%= l(:attr_last)%></label>
+    <%=text_field_tag 'settings[attr_last]', @settings['attr_last']%>
+</p>
+
+<p>
+    <label><%= l(:attr_mail)%></label>
+    <%=text_field_tag 'settings[attr_mail]', @settings['attr_mail']%>
+</p>
+<p>
+    <label><%= l(:on_the_fly)%></label>
+    <%=check_box_tag 'settings[onthefly]', true, @settings['onthefly'] == "true" %>
+</p>
+<p>
+    <label><%= l(:auto_register)%></label>
+    <%=check_box_tag 'settings[auto_register]', true, @settings['auto_register'] == "true" %>
+</p>
+</div>
+</fieldset>

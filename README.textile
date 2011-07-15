@@ -1,0 +1,77 @@
+h1. Redmine LDAP Advanced Authentication Plugin
+
+This plugin will enable your Redmine system to authenticate single user accounts or users that are members of groups in a large Active Directory. It will do a quick lookup of group membership and permit logon if a local Redmine group exists with the same name. It has been designed to work with local Redmine groups. Various methods of authentication are available, including LDAP failover.
+
+h2. System Requirements:
+
+* libldap-ruby1.8 package (e.g.: For Debian/Ubuntu: sudo apt-get install libldap-ruby1.8)
+** Note: Plugin uses Ruby/LDAP instead of Net::LDAP
+
+* For SSL/TLS authentication, you must have your AD certificate file (*.PEM file).
+
+h2. Features:
+
+h3. Add and Remove users from Redmine groups based on group membership.
+
+Domain administrators can manage access to Redmine through Active Directory groups. Access to Redmine is handled by AD groups, which take precedence. This eliminates having to manage user accounts or groups locally. For example, by creating a local empty Redmine group called RedmineViewAndEditIssues _and_ an Active Directory group called RedmineViewAndEditIssues, members of the Active Directory group will be added upon login, before their role is assigned. If they are in the Redmine group and they are _not_ in the Active Directory group, they will be removed. Simply create a local Redmine group with the same AD group name. Make sure the local Redmine group has associated roles enabled.
+
+h3. Fast lookup of group membership
+
+Group membership is determined by retrieving the user _token_ group, which works many times faster than a recursive "memberof" lookup. Nested groups work well. Works very fast even in AD directories with thousands of objects.
+
+h3. Fail over domain controller selection.  
+
+Setup multiple domain controllers to authenticate to ensure high availability.
+
+h3. Multi-protocol Options: Unencrypted (LDAP), SSL-V3 or TLS-1.0.
+
+Allows for encrypted bind transactions through LDAP.
+
+h3. On-the-fly registration of users found in active directory.
+
+Users that have an Active Directory account will not need to pre-register.  Additionally, this will ensure that new users that are enabled through On-the-Fly registration are switched to this authentication method. A simple post sign-on registration page will appear upon first login to verify user information. If an e-mail address is missing, user can add it on the Registration page.
+
+h3. Automatically switch newly registered users to LDAP Advanced Authentication.
+
+Ensures all new accounts are set to LDAP. 
+
+h3. Check for disabled accounts
+
+As safety measure, it will deny any connctions if the user account is disabled. 
+
+h1. Installation
+
+1. Ensure ruby-ldap gem and liblldap-ruby1.8 packages are installed
+2. Follow Redmine instructions for installing plugins (http://www.redmine.org/projects/redmine/wiki/Plugins)
+3. Restart Redmine server.
+4. Go to *Administration --> Plugins --> LDAP Advanced Authentication for Redmine --> Configure*
+5. Add Authentication Hosts, Authentication account credentials to access directory (e.g. foobar\user, and connection method.)
+6. Apply for changes to take effect. 
+
+h2. SSL/TLS Protocol (optional)
+
+1. Obtain copy of your AD's PEM certificate file (e.g. foo-bar.pem) and place it at /etc/ldap/
+2. Add following line in /etc/ldap/ldap.conf
+
+<pre> TLS_CACERT /etc/ldap/foo-bar.pem</pre>
+
+3. Restart Redmine server
+
+h2. Groups
+
+1. In AD Users and Computers, create or use existing AD domain group (must contain user accounts).
+2. In Redmine, go to *Administration --> Groups*
+3. Create local group with same name as Active Directory Group you selected in step #1. 
+3. Grant group access to a project with an associated role. (Optionally, you can create your own special role).
+
+h2. Connecting
+
+When users logon with same username/password, if the account belongs to the group you selected above, access will be automatic. If you look at the membership of the Redmine group, the user will be added automatically. If the user is removed from the AD group, then it will also be removed from the local Redmine group.
+
+h1. Tested Environments
+
+* Linux/Ubuntu 10.04 LTS, Apache2/Passenger, MySQL5
+* Redmine 1.1.x, 1.2.x
+
+
+
